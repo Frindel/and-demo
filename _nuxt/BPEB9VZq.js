@@ -1,0 +1,1 @@
+import{vt as e}from"./vdU7cZE9.js";import{n as t}from"./DMeGhCMl.js";import{t as n}from"./wvlUbm8l.js";var r=t(`talents`,()=>{let t=e([]),r=e([]),i=e(!1),a=n();return{publicTalents:t,allTalents:r,loading:i,loadPublic:async()=>{i.value=!0,t.value=await a.fetchPublicTalents(),i.value=!1},loadAll:async()=>{i.value=!0,r.value=await a.fetchAllTalents(),i.value=!1}}});export{r as t};

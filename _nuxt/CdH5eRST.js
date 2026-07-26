@@ -1,0 +1,1 @@
+import{vt as e,w as t}from"./vdU7cZE9.js";import{n}from"./DMeGhCMl.js";var r=n(`auth`,()=>{let n=e(null),r=e(``),i=e(``);return{role:n,name:r,contact:i,isLoggedIn:t(()=>n.value!==null),login:(e,t)=>{n.value=e,t?.name&&(r.value=t.name),t?.contact&&(i.value=t.contact)},logout:()=>{n.value=null,r.value=``,i.value=``}}},{persist:!0});export{r as t};

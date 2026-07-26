@@ -1,0 +1,1 @@
+import{Y as e,vt as t}from"./vdU7cZE9.js";var n=()=>{let n=t(!1);return e(()=>{n.value=!0}),n};export{n as t};
