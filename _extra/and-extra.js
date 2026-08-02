@@ -96,8 +96,9 @@
   }
 
   function tiers() {
-    return '<ol class="x-tiers">' + TIERS.map(function (t) {
-      return '<li class="x-tier' + (t.level === 4 ? ' x-tier--platinum' : '') + '" data-level="' + t.level + '">' +
+    return '<ol class="x-tiers">' + TIERS.map(function (t, i) {
+      return '<li class="x-tier x-tier--' + t.name.toLowerCase() + '"' +
+        ' data-level="' + t.level + '" style="--i:' + i + '">' +
         '<div class="x-tier__head">' +
           '<span class="x-tier__rank">0' + t.level + '</span>' +
           '<span class="x-tier__ladder" aria-hidden="true"><i></i><i></i><i></i><i></i></span>' +
@@ -206,6 +207,27 @@
     return location.pathname.replace(/\/+$/, '') || '/'
   }
 
+  /**
+   * Появление статусов при прокрутке. Директива приложения на наши узлы
+   * не распространяется, поэтому ведём свой наблюдатель.
+   */
+  function reveal() {
+    var cards = document.querySelectorAll('.x-tier:not(.is-in)')
+    if (!cards.length) return
+    if (!('IntersectionObserver' in window)) {
+      Array.prototype.forEach.call(cards, function (c) { c.classList.add('is-in') })
+      return
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return
+        e.target.classList.add('is-in')
+        io.unobserve(e.target)
+      })
+    }, { rootMargin: '0px 0px -12% 0px' })
+    Array.prototype.forEach.call(cards, function (c) { io.observe(c) })
+  }
+
   function wanted() {
     var p = path()
     if (p === BASE + '/rating') return ratingHtml
@@ -236,6 +258,7 @@
     var footer = document.querySelector('footer.footer')
     if (footer && footer.parentNode) {
       while (holder.firstChild) footer.parentNode.insertBefore(holder.firstChild, footer)
+      reveal()
       return
     }
 
@@ -243,6 +266,7 @@
     if (!main) return
     var host = main.lastElementChild || main
     while (holder.firstChild) host.appendChild(holder.firstChild)
+    reveal()
   }
 
   /* ── Запуск ─────────────────────────────────────────────────────── */
