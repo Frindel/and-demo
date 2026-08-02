@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="day">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Система обучения и развития талантов — Белый AND</title>
+<meta name="description" content="Уровни Bronze, Silver, Gold и Platinum, трёхнедельный цикл, рейтинг AND и виртуальная карта: как студент растёт от лекций до практики и работы.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="/and-demo/_nuxt/entry.BIYtiIbi.css">
+<style>
+/* Страница статическая: кастомный курсор рисуется скриптом приложения,
+   которого здесь нет, поэтому возвращаем системный. */
+@media (hover: hover) { a, body, button { cursor: auto } }
+
+/* Уровни: статус → формат обучения → вознаграждение. */
+.lvl {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--line);
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+}
+.lvl__row {
+  background: var(--surface);
+  display: grid;
+  grid-template-columns: 200px 1fr 1fr;
+  gap: 32px;
+  padding: 32px var(--pad-x);
+  transition: background var(--dur-base) var(--ease);
+}
+.lvl__row:hover { background: var(--surface-card) }
+.lvl__row--head {
+  background: var(--surface-card);
+  color: var(--text-faint);
+  font-size: 12px;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.lvl__row--head:hover { background: var(--surface-card) }
+.lvl__name {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  align-self: start;
+}
+.lvl__cell { color: var(--text-dim); font-size: 15px; line-height: 1.6 }
+.lvl__note {
+  color: var(--text-faint);
+  font-size: 14px;
+  margin-top: 24px;
+}
+
+/* Нумерованные перечни критериев и условий. */
+.crit { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden }
+.crit__item { background: var(--surface); padding: 28px var(--pad-x); display: flex; gap: 20px; align-items: baseline; transition: background var(--dur-base) var(--ease) }
+.crit__item:hover { background: var(--surface-card) }
+.crit__num { color: var(--text-faint); font-size: 12px; font-weight: 600; letter-spacing: .15em; flex: none }
+.crit__text { color: var(--text-dim); font-size: 15px; line-height: 1.6 }
+
+/* Выделенная врезка — правило, важное замечание, оговорка. */
+.note {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 32px var(--pad-x);
+  margin-top: 48px;
+}
+.note__label {
+  display: block;
+  color: var(--text-faint);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.note p { color: var(--text-dim); font-size: 16px; line-height: 1.7; margin: 0; max-width: 720px }
+
+/* Виртуальная карта. */
+.vcard {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: 48px var(--pad-x);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 48px;
+  align-items: center;
+}
+.vcard__mark { font-size: clamp(40px, 5vw, 64px); font-weight: 200; letter-spacing: -.04em; line-height: 1 }
+.vcard__mark span { display: block; font-size: 12px; font-weight: 600; letter-spacing: .25em; text-transform: uppercase; color: var(--text-faint); margin-top: 16px }
+.vcard__text { color: var(--text-dim); font-size: 16px; line-height: 1.7 }
+.vcard__text p { margin: 0 0 16px }
+.vcard__text p:last-child { margin-bottom: 0 }
+
+@media (max-width: 900px) {
+  .lvl__row { grid-template-columns: 1fr; gap: 12px }
+  .lvl__row--head { display: none }
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<header class="nav">
+  <a href="/and-demo/" class="nav__brand"><span>AND</span></a>
+  <nav class="nav__links">
+    <a href="/and-demo/flow">Как это работает</a>
+    <a href="/and-demo/rating">Рейтинг</a>
+    <a href="/and-demo/talents">Каталог</a>
+    <a href="/and-demo/learn">Обучение</a>
+    <a href="/and-demo/businesses">Бизнесы</a>
+    <a href="/and-demo/contact">Войти</a>
+    <a href="/and-demo/learn-system" aria-current="page" class="router-link-active">Система обучения</a>
+  </nav>
+  <div class="nav__controls">
+    <a href="/and-demo/learn" class="back-link"> ← Обучение </a>
+  </div>
+</header>
+
+<section class="section section--first">
+  <div class="container">
+    <div class="section__label">05 — Система обучения и развития талантов</div>
+    <h1 class="section__title">Статус, рейтинг и путь к работе</h1>
+    <p class="section__subtitle">
+      Знакомство студента с бизнесом начинается не после выпуска, а с первых недель
+      обучения. К моменту практики он уже понимает продукт, команду и контекст компании.
+    </p>
+
+    <ol class="steps" style="list-style:none;margin:0;padding:0">
+      <li class="step">
+        <div class="step__num">01</div>
+        <div class="step__title">Студенты</div>
+        <div class="step__desc">Посещают лекции, выполняют задания, участвуют в событиях партнёров.</div>
+      </li>
+      <li class="step">
+        <div class="step__num">02</div>
+        <div class="step__title">Онлайн-школа</div>
+        <div class="step__desc">Ведёт процесс, тестирует и передаёт AND отчётность о прогрессе.</div>
+      </li>
+      <li class="step">
+        <div class="step__num">03</div>
+        <div class="step__title">Бизнесы</div>
+        <div class="step__desc">Дают кейсы, проводят встречи и получают заинтересованную аудиторию.</div>
+      </li>
+      <li class="step">
+        <div class="step__num">04</div>
+        <div class="step__title">Рейтинг</div>
+        <div class="step__desc">Фиксирует результат и динамику развития каждые три недели.</div>
+      </li>
+      <li class="step">
+        <div class="step__num">05</div>
+        <div class="step__title">Работа</div>
+        <div class="step__desc">Практика, проект и приглашение в команду компании-партнёра.</div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section reveal">
+  <div class="container">
+    <div class="section__label">Уровни</div>
+    <h2 class="section__title">Статусы определяют формат обучения</h2>
+    <p class="section__subtitle">
+      Статус отражает не ценность человека, а текущий формат обучения и степень
+      вовлечённости. Пять лучших студентов цикла получают Platinum.
+    </p>
+
+    <div class="lvl">
+      <div class="lvl__row lvl__row--head">
+        <div>Статус</div>
+        <div>Формат обучения</div>
+        <div>Итоговое вознаграждение</div>
+      </div>
+      <div class="lvl__row">
+        <div class="lvl__name">BRONZE</div>
+        <div class="lvl__cell">Лекции и участие в открытых мероприятиях компаний-партнёров.</div>
+        <div class="lvl__cell">Базовый объём виртуальной валюты и скидок.</div>
+      </div>
+      <div class="lvl__row">
+        <div class="lvl__name">SILVER</div>
+        <div class="lvl__cell">Лекции, мероприятия и своевременный доступ к дополнительной учебной документации.</div>
+        <div class="lvl__cell">Повышенный объём валюты и расширенные предложения.</div>
+      </div>
+      <div class="lvl__row">
+        <div class="lvl__name">GOLD</div>
+        <div class="lvl__cell">Лекции, практические занятия, работа с кейсами и уникальная документация по расписанию.</div>
+        <div class="lvl__cell">Максимальный объём валюты, приоритетные возможности.</div>
+      </div>
+      <div class="lvl__row">
+        <div class="lvl__name">PLATINUM</div>
+        <div class="lvl__cell">Пять лучших студентов цикла: персональные возможности от AND и бизнесов.</div>
+        <div class="lvl__cell">Подписки, встречи, интервью и доступ к проектам.</div>
+      </div>
+    </div>
+
+    <p class="lvl__note">
+      Статус обновляется по результатам трёхнедельного цикла и может как повышаться,
+      так и понижаться.
+    </p>
+  </div>
+</section>
+
+<section class="section reveal">
+  <div class="container">
+    <div class="section__label">Переход</div>
+    <h2 class="section__title">Как перейти на уровень выше</h2>
+
+    <div class="crit">
+      <div class="crit__item"><span class="crit__num">01</span><span class="crit__text">Стабильно посещать занятия и выполнять обязательные задания.</span></div>
+      <div class="crit__item"><span class="crit__num">02</span><span class="crit__text">Показывать рост результатов на тестированиях.</span></div>
+      <div class="crit__item"><span class="crit__num">03</span><span class="crit__text">Проявлять инициативу и участвовать в мероприятиях компаний.</span></div>
+      <div class="crit__item"><span class="crit__num">04</span><span class="crit__text">Качественно работать в команде и над практическими кейсами.</span></div>
+      <div class="crit__item"><span class="crit__num">05</span><span class="crit__text">Соблюдать сроки и учитывать обратную связь преподавателей.</span></div>
+    </div>
+
+    <div class="note">
+      <span class="note__label">Правило перехода</span>
+      <p>
+        Основной пересмотр статуса проходит каждые три недели. При выдающемся прогрессе
+        и высокой активности возможно досрочное повышение — по совместному решению школы и AND.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal">
+  <div class="container">
+    <div class="section__label">Оценка</div>
+    <h2 class="section__title">Рейтинг AND и трёхнедельный цикл</h2>
+    <p class="section__subtitle">
+      Рейтинг показывает не только текущий результат, но и динамику развития. После
+      каждого цикла система фиксирует изменение прогресса в процентах и обновляет статус.
+    </p>
+
+    <div class="crit">
+      <div class="crit__item"><span class="crit__num">01</span><span class="crit__text">Посещаемость и дисциплина.</span></div>
+      <div class="crit__item"><span class="crit__num">02</span><span class="crit__text">Результаты тестирований.</span></div>
+      <div class="crit__item"><span class="crit__num">03</span><span class="crit__text">Выполнение домашних и практических заданий.</span></div>
+      <div class="crit__item"><span class="crit__num">04</span><span class="crit__text">Активность на лекциях и бизнес-мероприятиях.</span></div>
+      <div class="crit__item"><span class="crit__num">05</span><span class="crit__text">Инициативность, командная работа и качество проектов.</span></div>
+      <div class="crit__item"><span class="crit__num">06</span><span class="crit__text">Отзывы преподавателей, кураторов и представителей бизнеса.</span></div>
+    </div>
+
+    <div class="note">
+      <span class="note__label">Зачем отчётность</span>
+      <p>
+        Она нужна не «для галочки». Её задача — своевременно находить сильных и
+        мотивированных студентов, помогать им расти и готовить к реальной работе.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal">
+  <div class="container">
+    <div class="section__label">Возможности</div>
+    <h2 class="section__title">Platinum: пять лучших студентов</h2>
+    <p class="section__subtitle">
+      Статус получают пять лучших участников цикла — с высокими результатами,
+      устойчивой положительной динамикой и активным участием в жизни экосистемы.
+    </p>
+
+    <div class="card-grid">
+      <article class="card"><div class="card__body">
+        <h3 class="card__title">Подписки</h3>
+        <p class="card__desc">Профессиональные подписки от AND или компаний-партнёров.</p>
+      </div></article>
+      <article class="card"><div class="card__body">
+        <h3 class="card__title">Встреча с тимлидом</h3>
+        <p class="card__desc">Личная встреча с руководителем команды одного из бизнесов.</p>
+      </div></article>
+      <article class="card"><div class="card__body">
+        <h3 class="card__title">Тестовое собеседование</h3>
+        <p class="card__desc">Интервью с последующим разбором результатов.</p>
+      </div></article>
+      <article class="card"><div class="card__body">
+        <h3 class="card__title">Разбор резюме</h3>
+        <p class="card__desc">Консультация по резюме, портфолио и карьерному маршруту.</p>
+      </div></article>
+      <article class="card"><div class="card__body">
+        <h3 class="card__title">Приоритет на практику</h3>
+        <p class="card__desc">Первоочередной доступ к стажировкам и реальным проектам.</p>
+      </div></article>
+      <article class="card"><div class="card__body">
+        <h3 class="card__title">Закрытые встречи</h3>
+        <p class="card__desc">Участие во встречах с командами и основателями компаний.</p>
+      </div></article>
+    </div>
+
+    <div class="note">
+      <span class="note__label">На согласование</span>
+      <p>
+        Окончательный перечень преимуществ Platinum и порядок их предоставления
+        находятся в проработке.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal">
+  <div class="container">
+    <div class="section__label">Вознаграждение</div>
+    <h2 class="section__title">Виртуальная карта AND</h2>
+
+    <div class="vcard">
+      <div class="vcard__mark">
+        AND
+        <span>виртуальная карта</span>
+      </div>
+      <div class="vcard__text">
+        <p>
+          После завершения курса каждый студент получает виртуальную карту AND с
+          внутренней валютой и преимуществами от компаний-партнёров. Объём вознаграждения
+          зависит от итогового статуса: Gold — наибольший, Silver — повышенный,
+          Bronze — базовый.
+        </p>
+        <p>
+          Валюту можно потратить на товары, услуги, подписки, скидки и специальные
+          предложения в бизнесах, сотрудничающих с AND.
+        </p>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="note__label">Конфиденциальный расчёт</span>
+      <p>
+        Итоговая сумма заранее не объявляется и рассчитывается по внутренней
+        многофакторной модели AND. На неё влияют итоговый статус, количество циклов в
+        статусе Gold, стабильность прогресса и активность. Полный перечень критериев,
+        их веса и формула не раскрываются. После курса студент видит персональный баланс
+        в своём кабинете; публично сумма не публикуется.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section reveal">
+  <div class="container">
+    <div class="section__label">Результат</div>
+    <h2 class="section__title">От обучения — к сотрудничеству</h2>
+    <p class="section__subtitle">
+      Студент заранее понимает продукт и рабочий контекст, а бизнес наблюдает за его
+      развитием ещё до приглашения в проект.
+    </p>
+
+    <div class="card-grid">
+      <article class="card"><div class="card__body">
+        <h3 class="card__title">Студенты</h3>
+        <p class="card__desc">Знания, связи, портфолио, бонусы и понятный путь к практике или работе.</p>
+      </div></article>
+      <article class="card"><div class="card__body">
+        <h3 class="card__title">Онлайн-школа</h3>
+        <p class="card__desc">Отличительная образовательная модель и подтверждённые результаты учеников.</p>
+      </div></article>
+      <article class="card"><div class="card__body">
+        <h3 class="card__title">Бизнесы</h3>
+        <p class="card__desc">Первая аудитория, обратная связь и доступ к подготовленным кандидатам.</p>
+      </div></article>
+      <article class="card"><div class="card__body">
+        <h3 class="card__title">AND</h3>
+        <p class="card__desc">Устойчивая экосистема талантов, проектов и компаний.</p>
+      </div></article>
+    </div>
+
+    <div class="talents__cta">
+      <a href="/and-demo/contact" class="btn btn--white">Стать стажёром</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <a href="/and-demo/" class="footer__big">AND</a>
+    <nav class="footer__nav">
+      <a href="/and-demo/flow">Как это работает</a>
+      <a href="/and-demo/rating">Рейтинг</a>
+      <a href="/and-demo/talents">Каталог</a>
+      <a href="/and-demo/learn">Обучение</a>
+      <a href="/and-demo/businesses">Бизнесы</a>
+      <a href="/and-demo/library">Библиотека</a>
+      <a href="/and-demo/contact">Войти</a>
+      <a href="/and-demo/learn-system" aria-current="page" class="router-link-active">Система обучения</a>
+    </nav>
+    <div class="footer__row">
+      <span>Белый AND — найм, обучение, белые бизнесы</span>
+      <span class="footer__copy">© 2026 AND</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Появление секций при прокрутке — тот же эффект, что и на остальных страницах
+// (там его даёт директива приложения, здесь — свой наблюдатель).
+(function () {
+  var items = document.querySelectorAll('.reveal')
+  if (!('IntersectionObserver' in window)) {
+    items.forEach(function (el) { el.classList.add('is-visible') })
+    return
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target) }
+    })
+  }, { rootMargin: '0px 0px -10% 0px' })
+  items.forEach(function (el) { io.observe(el) })
+})()
+</script>
+</body>
+</html>
