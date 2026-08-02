@@ -19,22 +19,22 @@
 
   var TIERS = [
     {
-      level: 1, name: 'Bronze',
+      level: 1, name: 'Bronze', motto: 'Точка входа',
       format: 'Лекции и участие в открытых мероприятиях компаний-партнёров.',
       reward: 'Базовый объём виртуальной валюты и скидок.',
     },
     {
-      level: 2, name: 'Silver',
+      level: 2, name: 'Silver', motto: 'Набранный темп',
       format: 'Лекции, мероприятия и своевременный доступ к дополнительной учебной документации.',
       reward: 'Повышенный объём валюты и расширенные предложения.',
     },
     {
-      level: 3, name: 'Gold',
+      level: 3, name: 'Gold', motto: 'Ядро программы',
       format: 'Лекции, практические занятия, работа с кейсами и уникальная документация по расписанию.',
       reward: 'Максимальный объём валюты, приоритетные возможности.',
     },
     {
-      level: 4, name: 'Platinum', badge: '5 мест',
+      level: 4, name: 'Platinum', motto: 'Вершина цикла',
       format: 'Пять лучших студентов цикла: персональные возможности от AND и бизнесов.',
       reward: 'Подписки, встречи, интервью и доступ к проектам.',
     },
@@ -62,16 +62,55 @@
       '<p>' + esc(text) + '</p></div>'
   }
 
+  /**
+   * Карточки статусов. Общий скелет одинаков (номер, шкала уровня, имя,
+   * девиз, факты), но каждый металл получает свои сигнатурные слои:
+   * Silver — мерная рейка с вертикальным номером, Gold — ядро света,
+   * Platinum — срезанная грань и созвездие из пяти звёзд (пять мест).
+   * Bronze обходится клеймом (__rank) и фактурой на псевдоэлементах.
+   * __rise у карточек 2–4 — ступень, связывающая кромку с соседней.
+   */
   function tiers() {
     return '<ol class="x-tiers">' + TIERS.map(function (t, i) {
-      return '<li class="x-tier x-tier--' + t.name.toLowerCase() + '"' +
+      var key = t.name.toLowerCase()
+      /* Обратный отсчёт до вершины: Bronze — 03, Silver — 02, Gold — 01,
+         Platinum — бесконечность (SVG-лемниската: шрифтовой глиф мелкий
+         и криво сидит по вертикали). Шкала уровня живёт на data-level. */
+      var num = t.level === 4
+        ? '<svg class="x-tier__inf" viewBox="0 0 30 14" aria-label="бесконечность">' +
+            '<path d="M8 2.6C4.5 2.6 2.6 5 2.6 7C2.6 9 4.5 11.4 8 11.4C13 11.4 17 2.6 22 2.6C25.5 2.6 27.4 5 27.4 7C27.4 9 25.5 11.4 22 11.4C17 11.4 13 2.6 8 2.6Z"/>' +
+          '</svg>'
+        : '0' + (4 - t.level)
+      var sig = ''
+      if (key === 'silver') {
+        sig = '<span class="x-tier__sig" aria-hidden="true"><b>' + num + '</b></span>'
+      } else if (key === 'gold' || key === 'platinum') {
+        sig = '<span class="x-tier__sig" aria-hidden="true"></span>'
+      }
+      /* Кассиопея: реальная геометрия W-астеризма (ε–δ–γ–α–β Cas),
+         радиусы звёзд — по их видимой яркости. */
+      var sky = key === 'platinum'
+        ? '<svg class="x-tier__sky" viewBox="0 0 214 52" aria-hidden="true" focusable="false">' +
+            '<path class="x-tier__sky-line" d="M16 6 L66 25 L117 23 L144 46 L198 31"/>' +
+            '<circle cx="16" cy="6" r="1.5"/>' +
+            '<circle cx="66" cy="25" r="1.8"/>' +
+            '<circle cx="117" cy="23" r="2.4"/>' +
+            '<circle cx="144" cy="46" r="2.3"/>' +
+            '<circle cx="198" cy="31" r="2.2"/>' +
+          '</svg>'
+        : ''
+      return '<li class="x-tier x-tier--' + key + '"' +
         ' data-level="' + t.level + '" style="--i:' + i + '">' +
+        sig +
+        (t.level > 1 ? '<span class="x-tier__rise" aria-hidden="true"></span>' : '') +
         '<div class="x-tier__head">' +
-          '<span class="x-tier__rank">0' + t.level + '</span>' +
-          '<span class="x-tier__ladder" aria-hidden="true"><i></i><i></i><i></i><i></i></span>' +
+          '<span class="x-tier__rank">' + num + '</span>' +
+          '<span class="x-tier__gauge" aria-hidden="true"><i></i><i></i><i></i><i></i></span>' +
         '</div>' +
         '<h3 class="x-tier__name">' + esc(t.name) + '</h3>' +
+        '<span class="x-tier__motto">' + esc(t.motto) + '</span>' +
         (t.badge ? '<span class="x-tier__badge">' + esc(t.badge) + '</span>' : '') +
+        sky +
         '<dl class="x-tier__facts">' +
           '<dt>Формат обучения</dt><dd>' + esc(t.format) + '</dd>' +
           '<dt>Вознаграждение</dt><dd>' + esc(t.reward) + '</dd>' +

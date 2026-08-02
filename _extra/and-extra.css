@@ -3,50 +3,71 @@
  * критерии рейтинга, виртуальная карта, статус в кабинете стажёра.
  *
  * Классы с префиксом x- — чтобы не столкнуться со стилями приложения.
- * Цвета только из токенов сайта: ахроматика + золотой акцент для Platinum.
+ * Палитра: ахроматика сайта + четыре металла статусов. Любые новые
+ * значения — только оттенки этих же металлов (тени и блики).
  */
 
-/* Металлы статусов. Держим в одном месте, а не рассыпаем по правилам. */
 :root {
   --x-bronze: #8c5a2b;
+  --x-bronze-deep: #5e3d1e;
   --x-bronze-sheen: #dda877;
   --x-silver: #6d747c;
+  --x-silver-deep: #4a5058;
   --x-silver-sheen: #c6ccd3;
+  --x-silver-mirror: #eef0f3;
   --x-platinum-bg: #17191d;
+  --x-platinum-deep: #101216;
   --x-platinum-ink: #e9ebee;
   --x-platinum-dim: #a7aeb6;
   --x-platinum-line: #3a3f47;
 }
 
-/* ── Статусы: ступенчатая шкала развития ───────────────────────────── */
+/* ── Статусы: четыре металла, четыре способа обработки ──────────────
+   Bronze  — литьё: чеканная кромка, клеймо-печать, матовая штриховка.
+   Silver  — прокат: мерная рейка, зеркальный срез, машинные линейки.
+   Gold    — жар: номер-жар, дышащее ядро света, расплавленная линия.
+   Platinum — огранка: монолит, срезанная грань, имя гравировкой внизу,
+              созвездие из пяти звёзд — пять мест цикла.
+   Ряд связывают общий скелет, нарастание веса имени и ступени
+   восхождения: карточки поднимаются слева направо к пику Platinum.
+   ------------------------------------------------------------------ */
 
 .x-tiers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1px;
+  gap: 24px 20px;
   margin: 0;
   padding: 0;
   list-style: none;
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
 }
 
 .x-tier {
   --tier: var(--text);
   --tier-sheen: var(--text-dim);
-  background: var(--surface);
-  padding: 36px 32px 32px;
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  position: relative;
-  transition: background var(--dur-base) var(--ease);
+  gap: 18px;
+  min-height: 420px;
+  padding: 34px 30px 30px;
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--dur-base) var(--ease),
+              box-shadow var(--dur-base) var(--ease),
+              transform var(--dur-base) var(--ease);
 }
-.x-tier:hover { background: var(--surface-card) }
 
-/* Верхняя линия статуса — отрисовывается слева направо при появлении. */
+/* Ступени восхождения: слева ниже, справа выше; низ ряда общий
+   (грид-стретч). Только когда грид гарантированно в один ряд. */
+@media (min-width: 1200px) {
+  .x-tier--bronze { margin-top: 42px }
+  .x-tier--silver { margin-top: 28px }
+  .x-tier--gold { margin-top: 14px }
+}
+
+/* Верхняя кромка металла — отрисовывается слева направо при появлении. */
 .x-tier:before {
   content: "";
   position: absolute;
@@ -55,13 +76,14 @@
   background: var(--tier);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform .9s var(--ease), height .3s var(--ease);
+  transition: transform .9s var(--ease);
   transition-delay: calc(var(--i, 0) * 140ms);
+  z-index: 1;
 }
 .x-tier.is-in:before { transform: scaleX(1) }
-.x-tier:hover:before { height: 4px }
 
-/* Содержимое всплывает с задержкой по карточкам. */
+/* Reveal: содержимое всплывает с задержкой по карточкам.
+   Прозрачность внутренних элементов — только цветом, opacity занята. */
 .x-tier > * {
   opacity: 0;
   transform: translateY(14px);
@@ -70,9 +92,51 @@
 }
 .x-tier.is-in > * { opacity: 1; transform: none }
 
-.x-tier--bronze { --tier: var(--x-bronze); --tier-sheen: var(--x-bronze-sheen) }
-.x-tier--silver { --tier: var(--x-silver); --tier-sheen: var(--x-silver-sheen) }
-.x-tier--gold { --tier: var(--gold-deep); --tier-sheen: var(--gold-light) }
+/* Сигнатурные слои не должны ехать вместе с текстом — только проявляться. */
+.x-tier > .x-tier__sig,
+.x-tier > .x-tier__rise {
+  transform: none;
+  transition: opacity 1.1s var(--ease);
+  transition-delay: calc(var(--i, 0) * 140ms + 260ms);
+}
+.x-tier.is-in > .x-tier__sig,
+.x-tier.is-in > .x-tier__rise { transform: none }
+
+/* Bronze, Silver и Gold — цветные монолиты своих металлов с белым
+   текстом; Platinum остаётся тёмной вершиной. Кромки соседей для
+   ступеней-коннекторов светлые — по цвету верхних кромок карточек. */
+.x-tier--bronze { --tier: #fff; --tier-sheen: var(--x-bronze-sheen) }
+.x-tier--silver { --tier: #fff; --tier-sheen: var(--x-silver-sheen); --tier-prev: rgba(221, 168, 119, .6) }
+.x-tier--gold { --tier: #fff; --tier-sheen: var(--gold-light); --tier-prev: rgba(238, 240, 243, .6) }
+.x-tier--platinum { --tier-prev: rgba(255, 214, 110, .5) }
+
+/* Общее для металлических монолитов: белый текст и светлая графика. */
+.x-tier--bronze .x-tier__facts dt,
+.x-tier--silver .x-tier__facts dt,
+.x-tier--gold .x-tier__facts dt { color: rgba(255, 255, 255, .58) }
+.x-tier--bronze .x-tier__facts dd,
+.x-tier--silver .x-tier__facts dd,
+.x-tier--gold .x-tier__facts dd { color: rgba(255, 255, 255, .88) }
+.x-tier--silver .x-tier__gauge i,
+.x-tier--gold .x-tier__gauge i { background: rgba(255, 255, 255, .3) }
+
+/* Ступень-коннектор: горизонталь — продолжение кромки соседа слева,
+   вертикаль — подъём к собственной кромке. Виден только со ступенями. */
+.x-tier__rise {
+  display: none;
+  position: absolute;
+  top: 0; left: 0;
+  width: 12px;
+  height: 14px;
+  pointer-events: none;
+  border-right: 1px solid var(--tier);
+  border-bottom: 1px solid var(--tier-prev, var(--line-strong));
+}
+@media (min-width: 1200px) {
+  .x-tier__rise { display: block }
+}
+
+/* ── Общий скелет ─────────────────────────────────────────────────── */
 
 .x-tier__head {
   display: flex;
@@ -85,46 +149,34 @@
   font-size: 11px;
   font-weight: 600;
   letter-spacing: .25em;
-  color: var(--text-faint);
+  color: var(--tier);
 }
 
-/* Лесенка: сколько ступеней пройдено. Ступени вырастают по очереди. */
-.x-tier__ladder { display: flex; gap: 3px; align-items: flex-end }
-.x-tier__ladder i {
-  width: 4px;
+/* Шкала уровня: четыре элемента, заполнено по data-level.
+   Форма у каждого металла своя (заклёпки, риски, слитки, камни). */
+.x-tier__gauge { display: flex; gap: 6px; align-items: flex-end }
+.x-tier__gauge i {
+  display: block;
   background: var(--line-strong);
-  border-radius: var(--radius);
-  transform: scaleY(.12);
-  transform-origin: bottom;
-  transition: transform .55s var(--ease), background var(--dur-base) var(--ease);
+  transform: scale(.25);
+  transition: transform .55s var(--ease), background var(--dur-base) var(--ease),
+              border-color var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease);
 }
-.x-tier__ladder i:nth-child(1) { height: 8px }
-.x-tier__ladder i:nth-child(2) { height: 12px }
-.x-tier__ladder i:nth-child(3) { height: 16px }
-.x-tier__ladder i:nth-child(4) { height: 20px }
+.x-tier.is-in .x-tier__gauge i { transform: scale(1) }
+.x-tier.is-in .x-tier__gauge i:nth-child(1) { transition-delay: calc(var(--i, 0) * 140ms + 260ms) }
+.x-tier.is-in .x-tier__gauge i:nth-child(2) { transition-delay: calc(var(--i, 0) * 140ms + 340ms) }
+.x-tier.is-in .x-tier__gauge i:nth-child(3) { transition-delay: calc(var(--i, 0) * 140ms + 420ms) }
+.x-tier.is-in .x-tier__gauge i:nth-child(4) { transition-delay: calc(var(--i, 0) * 140ms + 500ms) }
 
-.x-tier.is-in .x-tier__ladder i { transform: scaleY(1) }
-.x-tier.is-in .x-tier__ladder i:nth-child(1) { transition-delay: calc(var(--i, 0) * 140ms + 260ms) }
-.x-tier.is-in .x-tier__ladder i:nth-child(2) { transition-delay: calc(var(--i, 0) * 140ms + 340ms) }
-.x-tier.is-in .x-tier__ladder i:nth-child(3) { transition-delay: calc(var(--i, 0) * 140ms + 420ms) }
-.x-tier.is-in .x-tier__ladder i:nth-child(4) { transition-delay: calc(var(--i, 0) * 140ms + 500ms) }
-
-.x-tier[data-level="1"] .x-tier__ladder i:nth-child(-n+1),
-.x-tier[data-level="2"] .x-tier__ladder i:nth-child(-n+2),
-.x-tier[data-level="3"] .x-tier__ladder i:nth-child(-n+3),
-.x-tier[data-level="4"] .x-tier__ladder i:nth-child(-n+4) {
+.x-tier[data-level="1"] .x-tier__gauge i:nth-child(-n+1),
+.x-tier[data-level="2"] .x-tier__gauge i:nth-child(-n+2),
+.x-tier[data-level="3"] .x-tier__gauge i:nth-child(-n+3),
+.x-tier[data-level="4"] .x-tier__gauge i:nth-child(-n+4) {
   background: var(--tier);
-}
-.x-tier:hover .x-tier__ladder i { background: var(--tier-sheen) }
-.x-tier:hover[data-level="1"] .x-tier__ladder i:nth-child(-n+1),
-.x-tier:hover[data-level="2"] .x-tier__ladder i:nth-child(-n+2),
-.x-tier:hover[data-level="3"] .x-tier__ladder i:nth-child(-n+3),
-.x-tier:hover[data-level="4"] .x-tier__ladder i:nth-child(-n+4) {
-  background: var(--tier);
+  border-color: var(--tier);
 }
 
-/* Название: чем выше статус, тем плотнее начертание.
-   Цвет — металл статуса, по нему один раз проходит блик. */
+/* Название: выше статус — плотнее начертание. Блик — по характеру металла. */
 .x-tier__name {
   margin: 0;
   font-size: 26px;
@@ -141,18 +193,33 @@
 .x-tier.is-in .x-tier__name {
   animation: x-sheen 2.2s var(--ease) calc(var(--i, 0) * 140ms + 400ms) 1 both;
 }
-.x-tier:hover .x-tier__name { animation: x-sheen 1.4s var(--ease) 1 both }
+.x-tier[data-level="1"] .x-tier__name { font-weight: 300; font-size: 23px }
+.x-tier[data-level="2"] .x-tier__name { font-weight: 400; font-size: 25px }
+.x-tier[data-level="3"] .x-tier__name { font-weight: 600; font-size: 27px }
+.x-tier[data-level="4"] .x-tier__name { font-weight: 700; font-size: 30px; letter-spacing: -.02em }
 
-@keyframes x-sheen {
-  from { background-position: 130% 0 }
-  to { background-position: -30% 0 }
+/* Градиентный текст держим только там, где он поддержан.
+   Bronze без клип-текста вовсе — его имя всегда ровное. */
+@supports (-webkit-background-clip: text) {
+  .x-tier--silver .x-tier__name,
+  .x-tier--gold .x-tier__name,
+  .x-tier--platinum .x-tier__name { -webkit-text-fill-color: transparent }
 }
-.x-tier[data-level="1"] .x-tier__name { font-weight: 300 }
-.x-tier[data-level="2"] .x-tier__name { font-weight: 400 }
-.x-tier[data-level="3"] .x-tier__name { font-weight: 600 }
-.x-tier[data-level="4"] .x-tier__name { font-weight: 700 }
 
-.x-tier__facts { margin: 0; display: grid; gap: 6px }
+/* Девиз статуса — короткая характеристика уровня под названием.
+   Прозрачность задаём цветом: opacity занята reveal-анимацией. */
+.x-tier__motto {
+  margin-top: -12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--tier) 60%, transparent);
+}
+.x-tier:hover .x-tier__motto { color: color-mix(in srgb, var(--tier) 90%, transparent) }
+
+/* Факты прижаты к низу — у карточек разной композиции общий нижний ритм. */
+.x-tier__facts { margin: auto 0 0; display: grid; gap: 6px }
 .x-tier__facts dt {
   font-size: 10px;
   font-weight: 600;
@@ -169,87 +236,356 @@
   color: var(--text-dim);
 }
 
-/* Platinum — вершина шкалы: карточка инвертируется, металл холодный. */
-.x-tier--platinum {
-  --tier: var(--x-platinum-ink);
-  --tier-sheen: #fff;
-  background: var(--x-platinum-bg);
-}
-.x-tier--platinum:hover { background: var(--x-platinum-bg) }
-.x-tier--platinum .x-tier__rank { color: var(--x-platinum-dim) }
-.x-tier--platinum .x-tier__ladder i { background: var(--x-platinum-line) }
-.x-tier--platinum .x-tier__facts dt { color: var(--x-platinum-dim) }
-.x-tier--platinum .x-tier__facts dd { color: var(--x-platinum-dim) }
+/* ── 01 · Bronze — литьё ──────────────────────────────────────────── */
 
-.x-tier__badge {
-  align-self: flex-start;
-  border: 1px solid var(--gold);
-  color: var(--gold-deep);
-  border-radius: var(--radius-pill);
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .15em;
-  text-transform: uppercase;
+/* Бронзовый монолит: слиток тёплого металла, свет падает сверху. */
+.x-tier--bronze {
+  border-color: rgba(221, 168, 119, .4);
+  background-color: #6b4220;
+  background-image:
+    linear-gradient(160deg, rgba(221, 168, 119, .25), transparent 55%),
+    linear-gradient(#7a4c24, #5e3d1e);
 }
 
-/* На тёмной карточке тёмное золото не читается — берём светлое. */
-.x-tier--platinum .x-tier__badge { border-color: var(--gold); color: var(--gold-light) }
-
-/* ── Характер статуса: чем выше, тем больше жизни ───────────────────
-   Bronze — матовый металл без блеска.
-   Silver — блик один раз при появлении.
-   Gold   — блик возвращается, тёплая подложка, свечение при наведении.
-   Platinum — светится постоянно: отблеск по карточке, бегущий блик,
-              дышащий бейдж.
-   ------------------------------------------------------------------ */
-
-/* Линия статуса: у старших — толще и с переливом. */
-.x-tier--gold:before {
+/* Чеканная кромка: прерывистые удары молотка вместо ровной линии. */
+.x-tier--bronze:before {
   height: 3px;
-  background-image: linear-gradient(90deg, var(--gold-deep), var(--gold), var(--gold-deep));
-}
-.x-tier--platinum:before {
-  height: 3px;
-  background-image: linear-gradient(90deg, var(--x-platinum-dim), #fff, var(--x-platinum-dim));
+  background: repeating-linear-gradient(90deg,
+    var(--x-bronze-sheen) 0 16px, rgba(221, 168, 119, .3) 16px 21px);
 }
 
-/* Номер получает оттенок своего металла. */
-.x-tier__rank { color: var(--tier); opacity: .5 }
-.x-tier--platinum .x-tier__rank { color: var(--x-platinum-dim); opacity: 1 }
+/* Матовая штриховка отливки в два прохода; наведение полирует металл.
+   Bronze тяжёлый — единственная карточка, не отрывающаяся от земли. */
+.x-tier--bronze:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(135deg, rgba(0, 0, 0, .15) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .05) 0 1px, transparent 1px 13px);
+  transition: opacity .8s var(--ease);
+}
+.x-tier--bronze:hover:after { opacity: 0 }
+.x-tier--bronze:hover { border-color: rgba(221, 168, 119, .75) }
 
-/* Градиентный текст держим только там, где он поддержан. */
-@supports (-webkit-background-clip: text) {
-  .x-tier--silver .x-tier__name,
-  .x-tier--gold .x-tier__name,
-  .x-tier--platinum .x-tier__name { -webkit-text-fill-color: transparent }
+/* Клеймо: номер оттиснут круглой печатью, чуть под углом.
+   Полировка выравнивает оттиск. */
+.x-tier--bronze .x-tier__rank {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(221, 168, 119, .7);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .08),
+              inset 0 2px 6px rgba(0, 0, 0, .35);
+  letter-spacing: .12em;
+  text-indent: .12em;
+  transform: rotate(-8deg);
+  transition: transform .5s var(--ease), border-color .5s var(--ease);
+}
+.x-tier--bronze:hover .x-tier__rank { transform: rotate(0deg); border-color: var(--x-bronze-sheen) }
+
+/* Заклёпки уровня. */
+.x-tier--bronze .x-tier__gauge { gap: 7px; align-items: center }
+.x-tier--bronze .x-tier__gauge i {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .45);
 }
 
-/* 01 — Bronze: ровный цвет, никакого движения по названию. */
+/* Матовое имя: ровный белый без бликов — и в покое, и при наведении. */
 .x-tier--bronze .x-tier__name,
 .x-tier--bronze.is-in .x-tier__name,
 .x-tier--bronze:hover .x-tier__name { animation: none; background-image: none }
 
-/* 02 — Silver: один проход блика при появлении. */
-.x-tier--silver { background-image: linear-gradient(158deg, rgba(109, 116, 124, .06), transparent 58%) }
+/* ── 02 · Silver — прокат ─────────────────────────────────────────── */
 
-/* 03 — Gold: тёплая подложка, блик возвращается, тепло при наведении. */
-.x-tier--gold { background-image: linear-gradient(158deg, rgba(201, 162, 39, .09), transparent 60%) }
+/* Стальной монолит: холодный прокат, свет по верхней грани. */
+.x-tier--silver {
+  padding-left: 48px;
+  border-color: rgba(238, 240, 243, .3);
+  background-color: #565d66;
+  background-image:
+    linear-gradient(158deg, rgba(255, 255, 255, .10), transparent 55%),
+    linear-gradient(#666d75, #454b53);
+}
+.x-tier--silver:before {
+  height: 1px;
+  background: linear-gradient(90deg, var(--x-silver-mirror), var(--x-silver-sheen));
+}
+
+/* Шлифовка тонкими линиями, тающая книзу. */
+.x-tier--silver:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(0deg,
+    rgba(255, 255, 255, .07) 0 1px, transparent 1px 6px);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, .9), transparent 75%);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, .9), transparent 75%);
+}
+
+/* Мерная рейка: шкала с рисками и вертикальный номер вдоль неё. */
+.x-tier--silver .x-tier__sig {
+  position: absolute;
+  top: 30px; bottom: 30px; left: 20px;
+  width: 9px;
+  pointer-events: none;
+  border-left: 1px solid rgba(255, 255, 255, .5);
+  background-image: repeating-linear-gradient(180deg,
+    rgba(255, 255, 255, .55) 0 1px, transparent 1px 24px);
+  background-size: 6px 100%;
+  background-repeat: no-repeat;
+}
+.x-tier--silver .x-tier__sig b {
+  position: absolute;
+  top: 0; left: 10px;
+  writing-mode: vertical-rl;
+  font-size: 10px;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: .35em;
+  color: var(--x-silver-mirror);
+}
+.x-tier--silver .x-tier__rank { display: none }
+.x-tier--silver .x-tier__head { justify-content: flex-end }
+
+/* Риски уровня — тонкие вертикальные штрихи. */
+.x-tier--silver .x-tier__gauge { gap: 5px }
+.x-tier--silver .x-tier__gauge i { width: 1px; border-radius: var(--radius); transform-origin: bottom }
+.x-tier--silver .x-tier__gauge i:nth-child(1) { height: 9px }
+.x-tier--silver .x-tier__gauge i:nth-child(2) { height: 13px }
+.x-tier--silver .x-tier__gauge i:nth-child(3) { height: 17px }
+.x-tier--silver .x-tier__gauge i:nth-child(4) { height: 21px }
+
+/* Зеркальный срез под именем: холодная кромка, по ней проходит блик. */
+.x-tier--silver .x-tier__name { position: relative; padding-bottom: 16px }
+.x-tier--silver .x-tier__name:after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background-image:
+    linear-gradient(90deg, transparent, var(--x-silver-mirror) 45%, var(--x-silver-sheen) 50%, transparent 65%),
+    linear-gradient(90deg, rgba(109, 116, 124, .45), rgba(109, 116, 124, 0) 80%);
+  background-size: 250% 100%, 100% 100%;
+  background-position: 120% 0, 0 0;
+}
+.x-tier--silver.is-in .x-tier__name:after {
+  animation: x-glint 1.6s var(--ease) calc(var(--i, 0) * 140ms + 600ms) 1 both;
+}
+.x-tier--silver:hover .x-tier__name:after { animation: x-glint 1.2s var(--ease) 1 both }
+
+/* Машинные линейки между фактами. */
+.x-tier--silver .x-tier__facts dt { border-top: 1px solid rgba(255, 255, 255, .22); padding-top: 10px }
+.x-tier--silver .x-tier__facts dt:first-child { border-top: 0; padding-top: 0 }
+
+.x-tier--silver:hover {
+  transform: translateY(-3px);
+  border-color: rgba(238, 240, 243, .55);
+}
+
+/* ── 03 · Gold — жар ──────────────────────────────────────────────── */
+
+/* Золотой монолит: старое золото, тёплый жар изнутри. */
+.x-tier--gold {
+  border-color: rgba(255, 220, 120, .4);
+  background-color: #7d5f13;
+  background-image:
+    linear-gradient(158deg, rgba(255, 235, 170, .16), transparent 55%),
+    linear-gradient(#96751c, #63490e);
+}
+.x-tier--gold:before {
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+}
+
+/* Ядро света: тёплое свечение снизу, дышит после появления. */
+.x-tier--gold .x-tier__sig {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(110% 80% at 30% 100%, rgba(255, 240, 180, .20), transparent 55%);
+}
+.x-tier--gold.is-in .x-tier__sig { animation: x-gold-breathe 6s var(--ease) infinite }
+
+/* Номер-жар: огромная светящаяся цифра в правом верхнем углу. */
+.x-tier--gold .x-tier__head { flex-direction: row-reverse; align-items: flex-start }
+.x-tier--gold .x-tier__rank {
+  font-size: 84px;
+  font-weight: 200;
+  line-height: .8;
+  letter-spacing: -.05em;
+  color: rgba(255, 240, 190, .30);
+  margin: -4px -4px 0 0;
+  transition: color .6s var(--ease);
+}
+.x-tier--gold:hover .x-tier__rank { color: rgba(255, 240, 190, .5) }
+
+/* Слитки уровня — светящиеся бруски. */
+.x-tier--gold .x-tier__gauge { margin-top: 8px }
+.x-tier--gold .x-tier__gauge i { width: 4px; border-radius: var(--radius); transform-origin: bottom }
+.x-tier--gold .x-tier__gauge i:nth-child(1) { height: 8px }
+.x-tier--gold .x-tier__gauge i:nth-child(2) { height: 12px }
+.x-tier--gold .x-tier__gauge i:nth-child(3) { height: 16px }
+.x-tier--gold .x-tier__gauge i:nth-child(4) { height: 20px }
+.x-tier--gold[data-level="3"] .x-tier__gauge i:nth-child(-n+3) {
+  background: linear-gradient(180deg, #fff, var(--gold-light));
+  box-shadow: 0 0 8px rgba(255, 235, 170, .45);
+}
+
+/* Расплавленная линия под именем: жар медленно гуляет по кромке. */
+.x-tier--gold .x-tier__name { position: relative; padding-bottom: 16px }
+.x-tier--gold .x-tier__name:after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 2px;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg,
+    var(--gold), var(--gold-light) 35%, #fff 50%, var(--gold-light) 65%, transparent);
+  background-size: 200% 100%;
+  animation: x-molten 5s var(--ease) infinite;
+}
 .x-tier--gold.is-in .x-tier__name {
   animation: x-sheen 2.4s var(--ease) calc(var(--i, 0) * 140ms + 400ms) 1 both,
              x-sheen-loop 9s var(--ease) 4s infinite;
 }
-.x-tier--gold:hover { box-shadow: inset 0 0 60px rgba(201, 162, 39, .12) }
-.x-tier--gold:hover .x-tier__ladder i { filter: drop-shadow(0 0 4px rgba(201, 162, 39, .5)) }
+.x-tier--gold:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 220, 120, .7);
+  box-shadow: inset 0 0 60px rgba(255, 235, 170, .12), 0 12px 40px rgba(201, 162, 39, .25);
+}
 
-/* 04 — Platinum: живёт всё время. */
+/* ── 04 · Platinum — огранка ──────────────────────────────────────── */
+
 .x-tier--platinum {
-  background-image: linear-gradient(158deg, rgba(255, 255, 255, .07), transparent 55%);
+  --tier: var(--x-platinum-ink);
+  --tier-sheen: #fff;
+  border-color: var(--x-platinum-line);
+  background-color: var(--x-platinum-bg);
+  background-image:
+    radial-gradient(1px 1px at 88% 42%, rgba(255, 255, 255, .30), transparent 100%),
+    radial-gradient(1.5px 1.5px at 64% 8%, rgba(255, 255, 255, .28), transparent 100%),
+    radial-gradient(1px 1px at 34% 26%, rgba(255, 255, 255, .22), transparent 100%),
+    radial-gradient(1.5px 1.5px at 12% 78%, rgba(255, 255, 255, .25), transparent 100%),
+    radial-gradient(1px 1px at 82% 86%, rgba(255, 255, 255, .20), transparent 100%),
+    linear-gradient(158deg, rgba(255, 255, 255, .06), transparent 55%),
+    linear-gradient(var(--x-platinum-deep), var(--x-platinum-bg) 40%);
 }
-.x-tier--platinum:hover {
-  background-image: linear-gradient(158deg, rgba(255, 255, 255, .11), transparent 55%);
+.x-tier--platinum:before {
+  height: 1px;
+  background: linear-gradient(90deg, var(--x-platinum-dim), #fff, var(--x-platinum-dim));
 }
-/* Отблеск, медленно проходящий по карточке. */
+
+/* Срезанная грань: угол монолита сколот, скол ловит свет. */
+.x-tier--platinum .x-tier__sig {
+  position: absolute;
+  top: 0; right: 0;
+  width: 74px; height: 74px;
+  pointer-events: none;
+  background: linear-gradient(225deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .02) 52%, transparent 58%);
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  transition: filter .6s var(--ease);
+}
+.x-tier--platinum .x-tier__sig:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(225deg, transparent 49.5%, rgba(255, 255, 255, .35) 50%, transparent 51%);
+}
+.x-tier--platinum:hover .x-tier__sig { filter: brightness(1.6) }
+
+/* Шапка: номер, линия горизонта, четыре гранёных камня. */
+.x-tier--platinum .x-tier__head:after {
+  content: "";
+  order: 2;
+  flex: 1;
+  height: 1px;
+  background: var(--x-platinum-line);
+}
+/* Вместо номера у вершины — бесконечность: SVG-лемниската, ровно
+   отцентрованная по линии горизонта. */
+.x-tier--platinum .x-tier__rank {
+  order: 1;
+  color: var(--x-platinum-dim);
+  letter-spacing: 0;
+  line-height: 0;
+  transition: color .6s var(--ease);
+}
+.x-tier--platinum:hover .x-tier__rank { color: var(--x-platinum-ink) }
+.x-tier__inf { display: block; width: 30px; height: 14px }
+.x-tier__inf path { fill: none; stroke: currentColor; stroke-width: 1.4 }
+.x-tier--platinum .x-tier__gauge { order: 3; gap: 8px; align-items: center }
+.x-tier--platinum .x-tier__gauge i {
+  width: 7px; height: 7px;
+  background: var(--x-platinum-line);
+  transform: rotate(45deg) scale(.25);
+}
+.x-tier--platinum.is-in .x-tier__gauge i { transform: rotate(45deg) scale(1) }
+.x-tier--platinum[data-level="4"] .x-tier__gauge i {
+  background: #fff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, .45);
+}
+
+/* Инверсия композиции: созвездие и факты в середине, имя выгравировано
+   внизу — единственная карточка, читающаяся снизу. */
+.x-tier--platinum .x-tier__sky { order: 1 }
+.x-tier--platinum .x-tier__facts { order: 2 }
+.x-tier--platinum .x-tier__name { order: 3 }
+.x-tier--platinum .x-tier__motto { order: 4 }
+.x-tier--platinum .x-tier__motto,
+.x-tier--platinum:hover .x-tier__motto { color: var(--x-platinum-dim) }
+.x-tier--platinum .x-tier__facts dt { color: var(--x-platinum-dim) }
+.x-tier--platinum .x-tier__facts dd { color: var(--x-platinum-dim) }
+
+/* Созвездие пяти звёзд — Кассиопея, пять мест цикла. Звёзды
+   зажигаются по очереди после появления и изредка мерцают, затем
+   линия созвездия дорисовывается сама; наведение усиливает свечение. */
+.x-tier--platinum .x-tier__sky {
+  display: block;
+  width: 100%;
+  height: 48px;
+  margin: auto 0;
+  overflow: visible;
+}
+/* Свободное место карточки делят auto-отступы созвездия — оно висит
+   ровно посередине между шапкой и фактами. */
+.x-tier--platinum .x-tier__facts { margin-top: 0 }
+.x-tier__sky-line {
+  fill: none;
+  stroke: rgba(255, 255, 255, .3);
+  stroke-width: 1;
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  transition: stroke .6s var(--ease);
+}
+.x-tier--platinum.is-in .x-tier__sky-line {
+  animation: x-sky-line 1.8s var(--ease) calc(var(--i, 0) * 140ms + 2.3s) forwards;
+}
+.x-tier--platinum:hover .x-tier__sky-line { stroke: rgba(255, 255, 255, .55) }
+.x-tier__sky circle {
+  fill: #fff;
+  opacity: 0;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, .6));
+  transition: filter .6s var(--ease);
+}
+.x-tier--platinum:hover .x-tier__sky circle { filter: drop-shadow(0 0 4px rgba(255, 255, 255, .95)) }
+.x-tier--platinum.is-in .x-tier__sky circle {
+  animation: x-star-in .7s var(--ease) both, x-star 7.4s ease-in-out infinite;
+}
+.x-tier--platinum.is-in .x-tier__sky circle:nth-of-type(1) { animation-delay: calc(var(--i, 0) * 140ms + .7s), 3.1s }
+.x-tier--platinum.is-in .x-tier__sky circle:nth-of-type(2) { animation-delay: calc(var(--i, 0) * 140ms + 1.05s), 4.3s }
+.x-tier--platinum.is-in .x-tier__sky circle:nth-of-type(3) { animation-delay: calc(var(--i, 0) * 140ms + 1.4s), 5.8s }
+.x-tier--platinum.is-in .x-tier__sky circle:nth-of-type(4) { animation-delay: calc(var(--i, 0) * 140ms + 1.75s), 3.7s }
+.x-tier--platinum.is-in .x-tier__sky circle:nth-of-type(5) { animation-delay: calc(var(--i, 0) * 140ms + 2.1s), 6.6s }
+
+/* Отблеск, медленно проходящий по монолиту. */
 .x-tier--platinum:after {
   content: "";
   position: absolute;
@@ -274,23 +610,99 @@
   animation: x-sheen 2.6s var(--ease) calc(var(--i, 0) * 140ms + 400ms) 1 both,
              x-sheen-loop 6s var(--ease) 3.4s infinite;
 }
-.x-tier--platinum.is-in .x-tier__badge { animation: x-badge 3.6s var(--ease) 2s infinite }
-.x-tier--platinum .x-tier__ladder i { filter: drop-shadow(0 0 5px rgba(255, 255, 255, .35)) }
 
+/* Пик восхождения: самый лёгкий подъём и самая глубокая тень. */
+.x-tier--platinum:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, .3);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .55);
+}
+
+/* ── Кейфреймы ────────────────────────────────────────────────────── */
+
+@keyframes x-sheen {
+  from { background-position: 130% 0 }
+  to { background-position: -30% 0 }
+}
 @keyframes x-sheen-loop {
   0%, 62% { background-position: 130% 0 }
   100% { background-position: -30% 0 }
+}
+@keyframes x-glint {
+  from { background-position: 120% 0, 0 0 }
+  to { background-position: -80% 0, 0 0 }
+}
+@keyframes x-molten {
+  0%, 100% { background-position: 0 0 }
+  50% { background-position: 60% 0 }
+}
+@keyframes x-gold-breathe {
+  0%, 100% { opacity: .45 }
+  50% { opacity: .95 }
 }
 @keyframes x-plat-sweep {
   0%, 62% { background-position: 135% 0 }
   100% { background-position: -35% 0 }
 }
-@keyframes x-badge {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 162, 39, 0) }
-  50% { box-shadow: 0 0 16px 0 rgba(201, 162, 39, .38) }
+@keyframes x-star-in {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+@keyframes x-sky-line {
+  to { stroke-dashoffset: 0 }
+}
+/* Короткое неровное мерцание раз в цикл, у каждой звезды своя фаза. */
+@keyframes x-star {
+  0%, 78%, 100% { opacity: 1 }
+  84% { opacity: .3 }
+  90% { opacity: .85 }
+  94% { opacity: .5 }
 }
 
 .x-tier__note { color: var(--text-faint); font-size: 14px; margin-top: 24px }
+
+/* Уважаем «меньше движения»: всё видно сразу, ничего не дышит. */
+@media (prefers-reduced-motion: reduce) {
+  .x-tier { transition: none }
+  .x-tier:hover { transform: none }
+  .x-tier:before { transform: scaleX(1); transition: none }
+  .x-tier > * { opacity: 1; transform: none; transition: none }
+  .x-tier > .x-tier__sig,
+  .x-tier > .x-tier__rise { transition: none }
+  .x-tier__gauge i,
+  .x-tier.is-in .x-tier__gauge i { transform: scale(1); transition: none }
+  .x-tier--platinum .x-tier__gauge i,
+  .x-tier--platinum.is-in .x-tier__gauge i { transform: rotate(45deg) }
+  .x-tier__name,
+  .x-tier.is-in .x-tier__name,
+  .x-tier--gold.is-in .x-tier__name,
+  .x-tier--platinum.is-in .x-tier__name { animation: none }
+  .x-tier--bronze:hover:after { opacity: 1 }
+  .x-tier--bronze .x-tier__rank { transform: none; transition: none }
+  .x-tier--silver .x-tier__name:after,
+  .x-tier--silver.is-in .x-tier__name:after,
+  .x-tier--silver:hover .x-tier__name:after { animation: none; background-position: -80% 0, 0 0 }
+  .x-tier--gold.is-in .x-tier__sig { animation: none }
+  .x-tier--gold .x-tier__name:after { animation: none }
+  .x-tier--platinum:after,
+  .x-tier--platinum.is-in:after { animation: none; opacity: 0 }
+  .x-tier__sky circle,
+  .x-tier--platinum.is-in .x-tier__sky circle { animation: none; opacity: 1 }
+  .x-tier__sky-line,
+  .x-tier--platinum.is-in .x-tier__sky-line { stroke-dashoffset: 0; transition: none; animation: none }
+}
+
+/* Мобайл: одна колонка, ступени и лишний воздух не нужны. */
+@media (max-width: 700px) {
+  .x-tiers { gap: 16px }
+  .x-tier { min-height: 0; padding: 26px 22px 24px }
+  .x-tier--silver { padding-left: 42px }
+  .x-tier--silver .x-tier__sig { left: 16px; top: 26px; bottom: 26px }
+  .x-tier--gold .x-tier__rank { font-size: 64px }
+  .x-tier--platinum .x-tier__sig { width: 58px; height: 58px }
+  .x-tier--platinum .x-tier__sky { height: 44px }
+  .x-tier--platinum .x-tier__name { margin-top: 8px }
+}
 
 /* ── Перечни: условия перехода, критерии рейтинга ──────────────────── */
 
@@ -382,23 +794,7 @@
 .x-status__value--gold { color: var(--gold-deep) }
 .x-status__hint { display: block; margin-top: 10px; font-size: 13px; color: var(--text-dim) }
 
-/* Уважаем системную настройку «меньше движения»: показываем всё сразу. */
-@media (prefers-reduced-motion: reduce) {
-  .x-tier:before { transform: scaleX(1); transition: none }
-  .x-tier > * { opacity: 1; transform: none; transition: none }
-  .x-tier__ladder i { transform: scaleY(1); transition: none }
-  .x-tier__name,
-  .x-tier.is-in .x-tier__name,
-  .x-tier:hover .x-tier__name,
-  .x-tier--gold.is-in .x-tier__name,
-  .x-tier--platinum.is-in .x-tier__name { animation: none }
-  .x-tier--platinum:after,
-  .x-tier--platinum.is-in:after { animation: none; opacity: 0 }
-  .x-tier--platinum.is-in .x-tier__badge { animation: none }
-}
-
 @media (max-width: 700px) {
-  .x-tier { padding: 28px 24px }
   .x-crit li { padding: 22px 24px }
   .x-note, .x-vcard { padding: 28px 24px }
   .x-status__cell { padding: 24px }
